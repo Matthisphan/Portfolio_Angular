@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+main {
+    position: relative;
+    min-height: 100vh;
+    background-color: #222327;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 40px;
+    padding: 170px 0px 100px 0px;
+}
+
+#backgroundVideo {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    min-width: 100%; 
+    height: 100%;
+}
+
+.containerGrid {
+    width: 50%;
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    align-items: center;
+}
+
+.gridItems {
+    text-align: center;
+    color: #fff;
+    background-color: #222327;
+    transition: box-shadow 0.4s;
+    aspect-ratio: 1 / 1;
+    z-index: 1;
+    border-radius: 15px;
+    padding: 15%;
+}
+
+.gridItems:hover {
+    box-shadow: 0px 0px 15px #4d4d4d;
+}
+
+img{
+    height: 100%;
+    width: 100%;
+    filter: drop-shadow(2px 4px 6px #4d4d4d);
+}
+
+.title{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    margin-top: 25px;
+}
+
+.filterButtons{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.filterButtons li{
+    list-style: none;
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.5s;
+    z-index: 1;
+}
+
+.filterButtons li:hover{
+    font-size: 20px;
+}
+
+@media only screen and (max-width: 1300px) {
+    .containerGrid {
+        width: 75%;
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media only screen and (max-width: 767px) {
+    .containerGrid {
+        width: 80%;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .title{
+        font-size: 14px;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .containerGrid {
+        width: 70%;
+        grid-template-columns: repeat(1, 1fr);
+    }
+    .filterButtons li{
+        font-size: 10px;
+    }
+    .filterButtons li:hover{
+        font-size: 14px;
+    }
+
+    .title{
+        font-size: 16px;
+    }
+}

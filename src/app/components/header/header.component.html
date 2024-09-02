@@ -1,0 +1,42 @@
+<header>
+    <nav>
+        <ul>
+            <li [class.active]="activeIndex === 0" (click)="setActive(0)">
+                <a href="#section_home">
+                    <span class="text">Accueil</span>
+                    <span class="icon">
+                        <i class="fa-solid fa-house"></i>
+                    </span>
+                </a>
+            </li>
+
+            <li [class.active]="activeIndex === 1" (click)="setActive(1)">
+                <a href="#section_project">
+                    <span class="text">Projets</span>
+                    <span class="icon">
+                        <i class="fa-solid fa-palette"></i>
+                    </span>
+                </a>
+            </li>
+
+            <li [class.active]="activeIndex === 2" (click)="setActive(2)">
+                <a href="#section_competence">
+                    <span class="text">Compétences</span>
+                    <span class="icon">
+                        <i class="fa-solid fa-list-check"></i>
+                    </span>
+                </a>
+            </li>
+
+            <li [class.active]="activeIndex === 3" (click)="setActive(3)">
+                <a href="#section_contact">
+                    <span class="text">Contact</span>
+                    <span class="icon">
+                        <i class="fa-solid fa-user"></i>
+                    </span>
+                </a>
+            </li>
+            <div class="indicator"></div>
+        </ul>
+    </nav>
+</header>

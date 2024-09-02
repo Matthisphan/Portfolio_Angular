@@ -1,0 +1,19 @@
+<main>
+    <video autoplay muted loop id="backgroundVideo">
+        <source src="background_competence.webm" type="video/mp4">
+    </video>
+
+    <ul class="filterButtons">
+        <li (click)="filterSkills('all')">Tout</li>
+        <li (click)="filterSkills('dev')">Développements</li>
+        <li (click)="filterSkills('design')">Design</li>
+        <li (click)="filterSkills('divers')">Divers</li>
+    </ul>
+
+    <div id="section_competence" class="containerGrid">
+        <div *ngFor="let skill of filteredSkills" class="gridItems">
+            <img [src]="skill.imageUrl" alt="{{ skill.title }}"/>
+            <h2 class='title'>{{ skill.title }}</h2>
+        </div>
+    </div>
+</main>

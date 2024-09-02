@@ -1,0 +1,30 @@
+<main>
+    <div class="background">
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <form (ngSubmit)="sendEmail($event)" #contactForm="ngForm">
+        <h3>Contactez-moi</h3>
+
+        <div id="containerFlex">
+            <div>
+                <label for="name">Nom</label>
+                <input id="name" type="text" name="user_name" required>
+            </div>
+
+            <div>
+                <label for="tel">Téléphone</label>
+                <input id="tel" type="text" name="user_phone" required>
+            </div>
+        </div>
+
+        <label for="email">Mail</label>
+        <input id="mail" type="email" name="user_email" required>
+
+        <label for="message">message</label>
+        <textarea id="message" name="message" required></textarea>
+
+        <button type="submit">Envoyer</button>
+    </form>
+</main>

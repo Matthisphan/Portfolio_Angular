@@ -1,0 +1,9 @@
+#section_home{
+    height: 100vh;
+}
+
+#section_project{
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}

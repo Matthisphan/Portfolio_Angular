@@ -1,0 +1,15 @@
+<main>
+  <ul id="section_project" class='slider'>
+    <li *ngFor="let slide of slides" class='item' [style.background-image]="getBackgroundImage(slide)" (click)="moveSlideToFront(slide)">
+        <div class='content'>
+          <h2 class='title'>{{ slide.title }}</h2>
+          <p class='description'>{{ slide.description }}</p>
+          <button (click)="goToLink(slide.lien)">voir plus</button>
+        </div>
+    </li>
+  </ul>
+  <nav class='nav'>
+    <ion-icon class='btn prev' name="chevron-back-outline" (click)="prevSlide()"></ion-icon>
+    <ion-icon class='btn next' name="chevron-forward-outline" (click)="nextSlide()"></ion-icon>
+  </nav>
+</main>
