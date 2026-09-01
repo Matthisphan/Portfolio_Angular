@@ -38,12 +38,12 @@ En production, renseignez les domaines publics autorisés via `NG_ALLOWED_HOSTS`
 
 ## Configuration du formulaire EmailJS
 
-Le formulaire utilise le service `service_1eim08v` et le modèle `template_7rpwy5i`. Dans le tableau de bord EmailJS, vérifiez les réglages suivants :
+Le formulaire utilise le service `service_u01na3e` et le modèle `template_7rpwy5i`. Dans le tableau de bord EmailJS, vérifiez les réglages suivants :
 
 - **To Email** : `matthisphan.pro@gmail.com` (adresse fixe, elle ne doit pas venir du navigateur)
 - **Reply-To** : `{{user_email}}`
-- contenu disponible : `{{user_name}}`, `{{user_email}}`, `{{user_phone}}`, `{{subject}}` et `{{message}}`
-- supprimez l'ancienne pièce jointe **Form File Attachment** de l'onglet **Attachments**
+- contenu disponible : `{{user_name}}`, `{{user_first_name}}`, `{{user_last_name}}`, `{{user_email}}`, `{{user_phone}}`, `{{subject}}` et `{{message}}`
+- supprimez impérativement l'ancienne pièce jointe **Form File Attachment** de l'onglet **Attachments** : les documents sont désormais envoyés sous forme de liens privés
 - ajoutez au contenu du mail les variables `{{attachment_count}}`, `{{attachment_links}}` et `{{attachment_expires_at}}`
 
 Exemple de bloc à placer dans le modèle :
@@ -66,7 +66,7 @@ Netlify Functions ne reçoit jamais le fichier. Elle génère une autorisation t
 
 1. Créez un bucket R2 privé nommé par exemple `portfolio-contact-uploads`.
 2. Créez un jeton API R2 limité à ce bucket avec les droits de lecture et d'écriture des objets.
-3. Ajoutez une règle de cycle de vie supprimant `contact-staging/` après un jour et `contact-files/` après sept jours.
+3. Ajoutez une règle de cycle de vie globale supprimant les objets du bucket après sept jours.
 4. Dans les réglages CORS du bucket, adaptez puis ajoutez :
 
 ```json

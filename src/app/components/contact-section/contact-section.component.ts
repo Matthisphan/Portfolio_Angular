@@ -1,8 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, OnDestroy } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import emailjs from '@emailjs/browser';
+import {
+  getCountries,
+  getCountryCallingCode,
+  parsePhoneNumberFromString,
+} from 'libphonenumber-js/min';
+import type { CountryCode } from 'libphonenumber-js/min';
 
 type SubmissionStatus = 'idle' | 'success' | 'error';
+type FilePreviewKind = 'image' | 'pdf' | 'word' | 'excel';
 
 interface PreparedUpload {
   uploadUrl: string;
@@ -24,6 +31,21 @@ interface CompletedUpload {
 
 interface UploadCompletion {
   files: CompletedUpload[];
+}
+
+interface SelectedAttachment {
+  id: string;
+  file: File;
+  extension: string;
+  kind: FilePreviewKind;
+  previewUrl?: string;
+}
+
+interface CountryOption {
+  code: CountryCode;
+  name: string;
+  dialCode: string;
+  flag: string;
 }
 
 class ContactUploadError extends Error {
@@ -73,34 +95,152 @@ const MIME_TYPE_BY_EXTENSION: Record<string, string> = {
   webp: 'image/webp',
 };
 
+function countryFlag(country: CountryCode): string {
+  return [...country]
+    .map((letter) => String.fromCodePoint(letter.charCodeAt(0) + 127397))
+    .join('');
+}
+
+function createCountryOptions(): CountryOption[] {
+  const displayNames = new Intl.DisplayNames(['fr'], { type: 'region' });
+
+  return getCountries()
+    .map((code) => ({
+      code,
+      name: displayNames.of(code) || code,
+      dialCode: `+${getCountryCallingCode(code)}`,
+      flag: countryFlag(code),
+    }))
+    .sort((first, second) => {
+      if (first.code === 'FR') {
+        return -1;
+      }
+      if (second.code === 'FR') {
+        return 1;
+      }
+      return first.name.localeCompare(second.name, 'fr');
+    });
+}
+
 @Component({
   selector: 'app-contact-section',
   imports: [FormsModule],
   templateUrl: './contact-section.component.html',
   styleUrl: './contact-section.component.css',
 })
-export class ContactSectionComponent {
+export class ContactSectionComponent implements OnDestroy {
   readonly recipientEmail = 'matthisphan.pro@gmail.com';
   readonly maxFileSizeLabel = '50 Mo';
+  readonly maxFileCount = MAX_FILE_COUNT;
+  readonly countries = createCountryOptions();
 
   isSending = false;
+  isDragging = false;
   uploadProgress = 0;
-  selectedFileNames: string[] = [];
+  selectedAttachments: SelectedAttachment[] = [];
   fileError = '';
+  phoneCountry: CountryCode = 'FR';
+  phoneNational = '';
+  phoneError = '';
   status: SubmissionStatus = 'idle';
   statusMessage = '';
 
+  private completedUploads: CompletedUpload[] = [];
+  private uploadedSelectionKey = '';
+
+  get selectedFileNames(): string[] {
+    return this.selectedAttachments.map(({ file }) => file.name);
+  }
+
+  get selectedFilesSize(): string {
+    const size = this.selectedAttachments.reduce(
+      (total, attachment) => total + attachment.file.size,
+      0,
+    );
+    return this.formatFileSize(size);
+  }
+
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    const files = Array.from(input.files ?? []);
+    await this.addAttachments(Array.from(input.files ?? []));
+    input.value = '';
+  }
 
-    this.selectedFileNames = files.map((file) => file.name);
-    this.fileError = await this.validateAttachments(files);
-
-    if (this.fileError) {
-      input.value = '';
-      this.selectedFileNames = [];
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    if (!this.isSending) {
+      this.isDragging = true;
     }
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragging = false;
+  }
+
+  async onDrop(event: DragEvent): Promise<void> {
+    event.preventDefault();
+    this.isDragging = false;
+
+    if (!this.isSending) {
+      await this.addAttachments(Array.from(event.dataTransfer?.files ?? []));
+    }
+  }
+
+  @HostListener('document:paste', ['$event'])
+  async onPaste(event: ClipboardEvent): Promise<void> {
+    if (this.isSending) {
+      return;
+    }
+
+    const pastedFiles = Array.from(event.clipboardData?.files ?? []);
+    if (!pastedFiles.length) {
+      return;
+    }
+
+    event.preventDefault();
+    const timestamp = Date.now();
+    const normalizedFiles = pastedFiles.map((file, index) =>
+      this.normalizePastedFile(file, timestamp, index),
+    );
+    await this.addAttachments(normalizedFiles);
+  }
+
+  openFilePicker(input: HTMLInputElement): void {
+    if (!this.isSending) {
+      input.click();
+    }
+  }
+
+  onDropZoneKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.openFilePicker(input);
+    }
+  }
+
+  removeAttachment(id: string): void {
+    const attachment = this.selectedAttachments.find(
+      (candidate) => candidate.id === id,
+    );
+    if (attachment?.previewUrl) {
+      URL.revokeObjectURL(attachment.previewUrl);
+    }
+
+    this.selectedAttachments = this.selectedAttachments.filter(
+      (candidate) => candidate.id !== id,
+    );
+    this.fileError = '';
+    this.invalidateCompletedUploads();
+  }
+
+  onPhoneChanged(): void {
+    this.phoneError = this.validatePhoneNumber();
+  }
+
+  onPhoneCountryChanged(country: CountryCode): void {
+    this.phoneCountry = country;
+    this.onPhoneChanged();
   }
 
   async sendEmail(
@@ -109,10 +249,14 @@ export class ContactSectionComponent {
     attachmentInput: HTMLInputElement,
   ): Promise<void> {
     event.preventDefault();
+    this.phoneError = this.validatePhoneNumber();
 
-    if (contactForm.invalid) {
+    if (contactForm.invalid || this.phoneError) {
       contactForm.control.markAllAsTouched();
-      this.setStatus('error', 'Vérifiez les champs obligatoires avant l’envoi.');
+      this.setStatus(
+        'error',
+        'Vérifiez les champs obligatoires avant l’envoi.',
+      );
       return;
     }
 
@@ -125,7 +269,7 @@ export class ContactSectionComponent {
       return;
     }
 
-    const attachments = Array.from(attachmentInput.files ?? []);
+    const attachments = this.selectedAttachments.map(({ file }) => file);
     this.fileError = await this.validateAttachments(attachments);
 
     if (this.fileError) {
@@ -133,6 +277,7 @@ export class ContactSectionComponent {
       return;
     }
 
+    this.setIdentityValues(form);
     this.isSending = true;
     this.uploadProgress = 0;
     this.setStatus(
@@ -142,24 +287,43 @@ export class ContactSectionComponent {
 
     try {
       if (attachments.length) {
-        const uploadedFiles = await this.uploadAttachments(attachments);
+        const selectionKey = this.getSelectionKey(attachments);
+        let uploadedFiles = this.completedUploads;
+
+        if (
+          this.uploadedSelectionKey !== selectionKey ||
+          uploadedFiles.length !== attachments.length
+        ) {
+          uploadedFiles = await this.uploadAttachments(attachments);
+          this.completedUploads = uploadedFiles;
+          this.uploadedSelectionKey = selectionKey;
+        }
+
         this.setAttachmentValues(form, uploadedFiles);
         this.setStatus('idle', 'Fichiers sécurisés. Envoi du message…');
       } else {
         this.clearAttachmentValues(form);
       }
 
-      await emailjs.sendForm('service_1eim08v', 'template_7rpwy5i', form, {
-        publicKey: 'yy6VYnnMVfZMngYHY',
-        blockHeadless: true,
-        limitRate: {
-          id: 'portfolio-contact-form',
-          throttle: 60_000,
+      await emailjs.send(
+        'service_u01na3e',
+        'template_7rpwy5i',
+        this.buildEmailParameters(form),
+        {
+          publicKey: 'yy6VYnnMVfZMngYHY',
+          blockHeadless: true,
+          limitRate: {
+            id: 'portfolio-contact-form',
+            throttle: 60_000,
+          },
         },
-      });
+      );
 
       this.resetForm(contactForm, attachmentInput);
-      this.setStatus('success', 'Message envoyé. Je vous répondrai dès que possible.');
+      this.setStatus(
+        'success',
+        'Message envoyé. Je vous répondrai dès que possible.',
+      );
     } catch (error: unknown) {
       console.error('Échec de l’envoi du formulaire :', error);
       this.setStatus('error', this.getSendErrorMessage(error));
@@ -167,6 +331,102 @@ export class ContactSectionComponent {
       this.isSending = false;
       this.uploadProgress = 0;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.revokePreviewUrls();
+  }
+
+  private async addAttachments(files: File[]): Promise<void> {
+    if (!files.length) {
+      return;
+    }
+
+    const existingFingerprints = new Set(
+      this.selectedAttachments.map(({ file }) => this.fileFingerprint(file)),
+    );
+    const uniqueFiles = files.filter((file) => {
+      const fingerprint = this.fileFingerprint(file);
+      if (existingFingerprints.has(fingerprint)) {
+        return false;
+      }
+      existingFingerprints.add(fingerprint);
+      return true;
+    });
+
+    if (!uniqueFiles.length) {
+      this.fileError = 'Ces fichiers sont déjà dans la sélection.';
+      return;
+    }
+
+    const combinedFiles = [
+      ...this.selectedAttachments.map(({ file }) => file),
+      ...uniqueFiles,
+    ];
+    const error = await this.validateAttachments(combinedFiles);
+
+    if (error) {
+      this.fileError = error;
+      return;
+    }
+
+    this.selectedAttachments = [
+      ...this.selectedAttachments,
+      ...uniqueFiles.map((file) => this.createSelectedAttachment(file)),
+    ];
+    this.fileError = '';
+    this.invalidateCompletedUploads();
+  }
+
+  private createSelectedAttachment(file: File): SelectedAttachment {
+    const extension = this.getExtension(file.name);
+    const kind = this.getPreviewKind(extension);
+
+    return {
+      id: `${this.fileFingerprint(file)}:${crypto.randomUUID()}`,
+      file,
+      extension,
+      kind,
+      previewUrl: kind === 'image' ? URL.createObjectURL(file) : undefined,
+    };
+  }
+
+  private normalizePastedFile(
+    file: File,
+    timestamp: number,
+    index: number,
+  ): File {
+    if (this.getExtension(file.name)) {
+      return file;
+    }
+
+    const extension =
+      Object.entries(MIME_TYPE_BY_EXTENSION).find(
+        ([candidate, mimeType]) =>
+          candidate !== 'jpeg' && mimeType === file.type,
+      )?.[0] || 'bin';
+
+    return new File(
+      [file],
+      `fichier-colle-${timestamp}-${index + 1}.${extension}`,
+      {
+        type: file.type,
+        lastModified: file.lastModified,
+      },
+    );
+  }
+
+  private getPreviewKind(extension: string): FilePreviewKind {
+    if (['jpg', 'jpeg', 'png', 'webp'].includes(extension)) {
+      return 'image';
+    }
+    if (extension === 'pdf') {
+      return 'pdf';
+    }
+    if (extension === 'doc' || extension === 'docx') {
+      return 'word';
+    }
+    return 'excel';
   }
 
   private async uploadAttachments(files: File[]): Promise<CompletedUpload[]> {
@@ -183,7 +443,10 @@ export class ContactSectionComponent {
     );
 
     if (preparation.uploads.length !== files.length) {
-      throw new ContactUploadError(502, 'Le stockage n’a pas préparé tous les fichiers.');
+      throw new ContactUploadError(
+        502,
+        'Le stockage n’a pas préparé tous les fichiers.',
+      );
     }
 
     const totalSize = files.reduce((total, file) => total + file.size, 0);
@@ -211,10 +474,48 @@ export class ContactSectionComponent {
     );
 
     if (completion.files.length !== files.length) {
-      throw new ContactUploadError(502, 'Le stockage n’a pas validé tous les fichiers.');
+      throw new ContactUploadError(
+        502,
+        'Le stockage n’a pas validé tous les fichiers.',
+      );
     }
 
     return completion.files;
+  }
+
+  private setIdentityValues(form: HTMLFormElement): void {
+    const firstName = this.getFormValue(form, 'user_first_name');
+    const lastName = this.getFormValue(form, 'user_last_name');
+
+    this.setFormValue(
+      form,
+      'user_name',
+      [firstName, lastName].filter(Boolean).join(' '),
+    );
+    this.setFormValue(form, 'user_phone', this.getInternationalPhone());
+  }
+
+  private buildEmailParameters(form: HTMLFormElement): Record<string, string> {
+    const parameterNames = [
+      'user_name',
+      'user_first_name',
+      'user_last_name',
+      'user_email',
+      'user_phone',
+      'phone_country',
+      'subject',
+      'message',
+      'attachment_url',
+      'attachment_links',
+      'attachment_count',
+      'attachment_name',
+      'attachment_size',
+      'attachment_expires_at',
+    ];
+
+    return Object.fromEntries(
+      parameterNames.map((name) => [name, this.getFormValue(form, name)]),
+    );
   }
 
   private setAttachmentValues(
@@ -228,7 +529,10 @@ export class ContactSectionComponent {
       )
       .join('\n\n');
     const firstFile = uploadedFiles[0];
-    const totalSize = uploadedFiles.reduce((total, file) => total + file.fileSize, 0);
+    const totalSize = uploadedFiles.reduce(
+      (total, file) => total + file.fileSize,
+      0,
+    );
 
     this.setFormValue(form, 'attachment_links', links);
     this.setFormValue(form, 'attachment_count', String(uploadedFiles.length));
@@ -238,7 +542,11 @@ export class ContactSectionComponent {
       'attachment_name',
       uploadedFiles.map((file) => file.fileName).join(', '),
     );
-    this.setFormValue(form, 'attachment_size', this.formatFileSize(totalSize));
+    this.setFormValue(
+      form,
+      'attachment_size',
+      this.formatFileSize(totalSize),
+    );
     this.setFormValue(form, 'attachment_expires_at', firstFile.expiresAt);
   }
 
@@ -315,9 +623,14 @@ export class ContactSectionComponent {
         if (progressEvent.lengthComputable) {
           this.uploadProgress = Math.min(
             99,
-            Math.round(((uploadedSize + progressEvent.loaded) / totalSize) * 100),
+            Math.round(
+              ((uploadedSize + progressEvent.loaded) / totalSize) * 100,
+            ),
           );
-          this.setStatus('idle', `Téléversement sécurisé : ${this.uploadProgress} %`);
+          this.setStatus(
+            'idle',
+            `Téléversement sécurisé : ${this.uploadProgress} %`,
+          );
         }
       });
 
@@ -343,7 +656,12 @@ export class ContactSectionComponent {
         );
       });
       request.addEventListener('timeout', () => {
-        reject(new ContactUploadError(408, 'Le téléversement a pris trop de temps.'));
+        reject(
+          new ContactUploadError(
+            408,
+            'Le téléversement a pris trop de temps.',
+          ),
+        );
       });
       request.timeout = 60 * 60 * 1000;
       request.send(file);
@@ -425,12 +743,38 @@ export class ContactSectionComponent {
 
         const decodedIndex = new TextDecoder('latin1').decode(archiveIndex);
         return extension === 'docx'
-          ? decodedIndex.includes('word/') && decodedIndex.includes('[Content_Types].xml')
-          : decodedIndex.includes('xl/') && decodedIndex.includes('[Content_Types].xml');
+          ? decodedIndex.includes('word/') &&
+              decodedIndex.includes('[Content_Types].xml')
+          : decodedIndex.includes('xl/') &&
+              decodedIndex.includes('[Content_Types].xml');
       }
       default:
         return false;
     }
+  }
+
+  private validatePhoneNumber(): string {
+    const value = this.phoneNational.trim();
+    if (!value) {
+      return '';
+    }
+
+    const phoneNumber = parsePhoneNumberFromString(value, this.phoneCountry);
+    return phoneNumber?.isValid()
+      ? ''
+      : 'Indiquez un numéro de téléphone valide pour ce pays.';
+  }
+
+  private getInternationalPhone(): string {
+    const value = this.phoneNational.trim();
+    if (!value) {
+      return '';
+    }
+
+    return (
+      parsePhoneNumberFromString(value, this.phoneCountry)?.number.toString() ||
+      ''
+    );
   }
 
   private getSendErrorMessage(error: unknown): string {
@@ -451,11 +795,25 @@ export class ContactSectionComponent {
         ? Number(error.status)
         : 0;
 
+    if (status === 400 || status === 422) {
+      return `Le modèle EmailJS a refusé le message (code ${status}). Retirez l’ancienne pièce jointe configurée dans EmailJS.`;
+    }
+
+    if (status === 401 || status === 403) {
+      return `EmailJS a refusé l’accès (code ${status}). Vérifiez le domaine autorisé et la clé publique.`;
+    }
+
     if (status === 429) {
       return 'Un message vient déjà d’être envoyé. Réessayez dans une minute.';
     }
 
-    return 'L’envoi a échoué. Réessayez plus tard ou écrivez directement à l’adresse indiquée.';
+    if (status >= 500) {
+      return `Le service d’e-mail est momentanément indisponible (code ${status}).`;
+    }
+
+    return status
+      ? `L’envoi de l’e-mail a échoué (code ${status}).`
+      : 'L’envoi a échoué. Vérifiez votre connexion ou écrivez directement à l’adresse indiquée.';
   }
 
   private getExtension(fileName: string): string {
@@ -463,6 +821,9 @@ export class ContactSectionComponent {
   }
 
   private formatFileSize(size: number): string {
+    if (size === 0) {
+      return '0 Ko';
+    }
     if (size < 1024 * 1024) {
       return `${Math.ceil(size / 1024)} Ko`;
     }
@@ -470,7 +831,28 @@ export class ContactSectionComponent {
     return `${(size / (1024 * 1024)).toFixed(1).replace('.', ',')} Mo`;
   }
 
-  private setFormValue(form: HTMLFormElement, name: string, value: string): void {
+  private fileFingerprint(file: File): string {
+    return `${file.name}:${file.size}:${file.lastModified}`;
+  }
+
+  private getSelectionKey(files: File[]): string {
+    return files.map((file) => this.fileFingerprint(file)).join('|');
+  }
+
+  private getFormValue(form: HTMLFormElement, name: string): string {
+    const input = form.elements.namedItem(name) as
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | HTMLSelectElement
+      | null;
+    return input?.value.trim() || '';
+  }
+
+  private setFormValue(
+    form: HTMLFormElement,
+    name: string,
+    value: string,
+  ): void {
     const input = form.elements.namedItem(name) as HTMLInputElement | null;
     if (input) {
       input.value = value;
@@ -490,11 +872,32 @@ export class ContactSectionComponent {
     }
   }
 
-  private resetForm(contactForm: NgForm, attachmentInput: HTMLInputElement): void {
+  private resetForm(
+    contactForm: NgForm,
+    attachmentInput: HTMLInputElement,
+  ): void {
     contactForm.resetForm();
     attachmentInput.value = '';
-    this.selectedFileNames = [];
+    this.phoneCountry = 'FR';
+    this.phoneNational = '';
+    this.phoneError = '';
     this.fileError = '';
+    this.revokePreviewUrls();
+    this.selectedAttachments = [];
+    this.invalidateCompletedUploads();
+  }
+
+  private revokePreviewUrls(): void {
+    for (const attachment of this.selectedAttachments) {
+      if (attachment.previewUrl) {
+        URL.revokeObjectURL(attachment.previewUrl);
+      }
+    }
+  }
+
+  private invalidateCompletedUploads(): void {
+    this.completedUploads = [];
+    this.uploadedSelectionKey = '';
   }
 
   private setStatus(status: SubmissionStatus, message: string): void {

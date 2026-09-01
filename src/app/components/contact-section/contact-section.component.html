@@ -9,97 +9,268 @@
     (ngSubmit)="sendEmail($event, contactForm, attachmentInput)"
     #contactForm="ngForm"
   >
-    <div class="form-heading">
-      <p class="eyebrow">Un projet, une question ?</p>
-      <h3>Contactez-moi</h3>
+    <header class="form-heading">
+      <div>
+        <p class="eyebrow">Un projet, une question ?</p>
+        <h3>Contactez-moi</h3>
+      </div>
       <p class="form-intro">
-        Votre message sera envoyé à
-        <a [href]="'mailto:' + recipientEmail">{{ recipientEmail }}</a>.
+        Réponse directe à
+        <a [href]="'mailto:' + recipientEmail">{{ recipientEmail }}</a>
       </p>
-    </div>
+    </header>
 
-    <div class="form-grid">
-      <div class="field">
-        <label for="name">Nom <span aria-hidden="true">*</span></label>
-        <input id="name" type="text" name="user_name" autocomplete="name" minlength="2" maxlength="80" required ngModel #name="ngModel">
-        @if (name.invalid && name.touched) {
-          <p class="field-error">Indiquez un nom valide.</p>
-        }
-      </div>
+    <div class="form-layout">
+      <section class="form-column" aria-label="Vos coordonnées">
+        <div class="field-row">
+          <div class="field">
+            <label for="first-name">
+              Prénom <span aria-hidden="true">*</span>
+            </label>
+            <input
+              id="first-name"
+              type="text"
+              name="user_first_name"
+              autocomplete="given-name"
+              minlength="2"
+              maxlength="60"
+              required
+              ngModel
+              #firstName="ngModel"
+            >
+            @if (firstName.invalid && firstName.touched) {
+              <p class="field-error">Indiquez un prénom valide.</p>
+            }
+          </div>
 
-      <div class="field">
-        <label for="tel">Téléphone</label>
-        <input id="tel" type="tel" name="user_phone" autocomplete="tel" inputmode="tel" maxlength="30" ngModel>
-      </div>
+          <div class="field">
+            <label for="last-name">
+              Nom <span aria-hidden="true">*</span>
+            </label>
+            <input
+              id="last-name"
+              type="text"
+              name="user_last_name"
+              autocomplete="family-name"
+              minlength="2"
+              maxlength="80"
+              required
+              ngModel
+              #lastName="ngModel"
+            >
+            @if (lastName.invalid && lastName.touched) {
+              <p class="field-error">Indiquez un nom valide.</p>
+            }
+          </div>
+        </div>
 
-      <div class="field field--full">
-        <label for="email">Adresse e-mail <span aria-hidden="true">*</span></label>
-        <input id="email" type="email" name="user_email" autocomplete="email" maxlength="254" required email ngModel #email="ngModel">
-        @if (email.invalid && email.touched) {
-          <p class="field-error">Indiquez une adresse e-mail valide.</p>
-        }
-      </div>
-
-      <div class="field field--full">
-        <label for="subject">Objet <span aria-hidden="true">*</span></label>
-        <input id="subject" type="text" name="subject" maxlength="120" required ngModel #subject="ngModel">
-        @if (subject.invalid && subject.touched) {
-          <p class="field-error">Indiquez l’objet de votre message.</p>
-        }
-      </div>
-
-      <div class="field field--full">
-        <label for="message">Message <span aria-hidden="true">*</span></label>
-        <textarea id="message" name="message" rows="6" minlength="20" maxlength="3000" required ngModel #message="ngModel"></textarea>
-        <div class="field-meta">
-          @if (message.invalid && message.touched) {
-            <p class="field-error">Écrivez un message d’au moins 20 caractères.</p>
-          } @else {
-            <span>3 000 caractères maximum</span>
+        <div class="field">
+          <label for="email">
+            Adresse e-mail <span aria-hidden="true">*</span>
+          </label>
+          <input
+            id="email"
+            type="email"
+            name="user_email"
+            autocomplete="email"
+            maxlength="254"
+            required
+            email
+            ngModel
+            #email="ngModel"
+          >
+          @if (email.invalid && email.touched) {
+            <p class="field-error">Indiquez une adresse e-mail valide.</p>
           }
         </div>
-      </div>
 
-      <div class="field field--full">
-        <label for="attachment">Pièce jointe <span class="optional">facultative</span></label>
-        <input
-          #attachmentInput
-          id="attachment"
-          type="file"
-          multiple
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/webp"
-          [disabled]="isSending"
-          (change)="onFileSelected($event)"
-        >
-        <p class="file-help">Jusqu’à 5 fichiers · PDF, Word, Excel, JPG, PNG ou WebP · {{ maxFileSizeLabel }} au total</p>
-        @if (selectedFileNames.length) {
-          <p class="selected-file">
-            {{ selectedFileNames.length }} fichier{{ selectedFileNames.length > 1 ? 's' : '' }} sélectionné{{ selectedFileNames.length > 1 ? 's' : '' }} :
-          </p>
-          <ul class="selected-files" aria-label="Fichiers sélectionnés">
-            @for (fileName of selectedFileNames; track $index) {
-              <li>{{ fileName }}</li>
-            }
-          </ul>
-        }
-        @if (fileError) {
-          <p class="field-error" role="alert">{{ fileError }}</p>
-        }
-        @if (isSending && uploadProgress > 0) {
-          <div
-            class="upload-progress"
-            role="progressbar"
-            aria-label="Téléversement de la pièce jointe"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            [attr.aria-valuenow]="uploadProgress"
-          >
-            <span [style.width.%]="uploadProgress"></span>
+        <div class="field">
+          <label for="tel">Téléphone <span class="optional">facultatif</span></label>
+          <div class="phone-control" [class.phone-control--invalid]="phoneError">
+            <select
+              id="phone-country"
+              name="phone_country"
+              aria-label="Indicatif du pays"
+              [ngModel]="phoneCountry"
+              (ngModelChange)="onPhoneCountryChanged($event)"
+              [disabled]="isSending"
+            >
+              @for (country of countries; track country.code) {
+                <option [ngValue]="country.code">
+                  {{ country.flag }} {{ country.dialCode }} — {{ country.name }}
+                </option>
+              }
+            </select>
+            <input
+              id="tel"
+              type="tel"
+              name="phone_national"
+              autocomplete="tel-national"
+              inputmode="tel"
+              maxlength="30"
+              placeholder="6 12 34 56 78"
+              [(ngModel)]="phoneNational"
+              (ngModelChange)="onPhoneChanged()"
+              [disabled]="isSending"
+              [attr.aria-invalid]="phoneError ? 'true' : null"
+            >
           </div>
-        }
-      </div>
+          @if (phoneError) {
+            <p class="field-error">{{ phoneError }}</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="subject">
+            Objet <span aria-hidden="true">*</span>
+          </label>
+          <input
+            id="subject"
+            type="text"
+            name="subject"
+            maxlength="120"
+            required
+            ngModel
+            #subject="ngModel"
+          >
+          @if (subject.invalid && subject.touched) {
+            <p class="field-error">Indiquez l’objet de votre message.</p>
+          }
+        </div>
+
+        <p class="security-note">
+          <span aria-hidden="true">🔒</span>
+          Liens privés pendant 7 jours. Exécutables, archives et documents avec
+          macros refusés.
+        </p>
+      </section>
+
+      <section class="form-column form-column--message" aria-label="Votre message">
+        <div class="field">
+          <label for="message">
+            Message <span aria-hidden="true">*</span>
+          </label>
+          <textarea
+            id="message"
+            name="message"
+            rows="5"
+            minlength="20"
+            maxlength="3000"
+            required
+            ngModel
+            #message="ngModel"
+          ></textarea>
+          <div class="field-meta">
+            @if (message.invalid && message.touched) {
+              <p class="field-error">Écrivez un message d’au moins 20 caractères.</p>
+            } @else {
+              <span>3 000 caractères maximum</span>
+            }
+          </div>
+        </div>
+
+        <div class="field upload-field">
+          <div class="upload-heading">
+            <label id="attachment-label" for="attachment">
+              Documents <span class="optional">facultatifs</span>
+            </label>
+            <span>{{ selectedAttachments.length }}/{{ maxFileCount }} · {{ selectedFilesSize }}</span>
+          </div>
+
+          <div
+            class="drop-zone"
+            [class.drop-zone--active]="isDragging"
+            [class.drop-zone--disabled]="isSending"
+            role="button"
+            tabindex="0"
+            aria-labelledby="attachment-label"
+            aria-describedby="file-help"
+            (click)="openFilePicker(attachmentInput)"
+            (keydown)="onDropZoneKeydown($event, attachmentInput)"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+          >
+            <input
+              #attachmentInput
+              id="attachment"
+              class="file-input"
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/webp"
+              [disabled]="isSending"
+              (change)="onFileSelected($event)"
+            >
+            <span class="drop-zone__icon" aria-hidden="true">＋</span>
+            <span class="drop-zone__title">Déposez ou sélectionnez vos fichiers</span>
+            <span class="drop-zone__hint">Vous pouvez aussi copier puis coller avec Ctrl + V</span>
+          </div>
+
+          <p id="file-help" class="file-help">
+            PDF, Word, Excel, JPG, PNG ou WebP · {{ maxFileSizeLabel }} au total
+          </p>
+
+          @if (selectedAttachments.length) {
+            <div class="file-previews" aria-label="Aperçu des fichiers sélectionnés">
+              @for (attachment of selectedAttachments; track attachment.id) {
+                <article class="file-card">
+                  <div class="file-card__preview">
+                    @if (attachment.previewUrl) {
+                      <img
+                        [src]="attachment.previewUrl"
+                        [alt]="'Aperçu de ' + attachment.file.name"
+                      >
+                    } @else {
+                      <span
+                        class="file-card__type"
+                        [class.file-card__type--pdf]="attachment.kind === 'pdf'"
+                        [class.file-card__type--word]="attachment.kind === 'word'"
+                        [class.file-card__type--excel]="attachment.kind === 'excel'"
+                      >
+                        {{ attachment.extension.toUpperCase() }}
+                      </span>
+                    }
+                  </div>
+                  <div class="file-card__details">
+                    <strong [title]="attachment.file.name">{{ attachment.file.name }}</strong>
+                    <span>{{ attachment.file.size < 1048576 ? (attachment.file.size / 1024).toFixed(0) + ' Ko' : (attachment.file.size / 1048576).toFixed(1) + ' Mo' }}</span>
+                  </div>
+                  <button
+                    class="file-card__remove"
+                    type="button"
+                    [disabled]="isSending"
+                    [attr.aria-label]="'Retirer ' + attachment.file.name"
+                    (click)="removeAttachment(attachment.id)"
+                  >
+                    ×
+                  </button>
+                </article>
+              }
+            </div>
+          }
+
+          @if (fileError) {
+            <p class="field-error" role="alert">{{ fileError }}</p>
+          }
+
+          @if (isSending && uploadProgress > 0) {
+            <div
+              class="upload-progress"
+              role="progressbar"
+              aria-label="Téléversement des documents"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              [attr.aria-valuenow]="uploadProgress"
+            >
+              <span [style.width.%]="uploadProgress"></span>
+            </div>
+          }
+        </div>
+      </section>
     </div>
 
+    <input type="hidden" name="user_name">
+    <input type="hidden" name="user_phone">
     <input type="hidden" name="attachment_url">
     <input type="hidden" name="attachment_links">
     <input type="hidden" name="attachment_count">
@@ -109,33 +280,41 @@
 
     <div class="honeypot" aria-hidden="true">
       <label for="website">Site web</label>
-      <input id="website" type="text" name="website" tabindex="-1" autocomplete="off">
+      <input
+        id="website"
+        type="text"
+        name="website"
+        tabindex="-1"
+        autocomplete="off"
+      >
     </div>
 
-    <p class="security-note">
-      Les fichiers exécutables, archives et documents avec macros sont refusés. Les pièces jointes sont transmises par des liens privés temporaires ; n’envoyez pas de données sensibles.
-    </p>
-
-    @if (statusMessage) {
-      <p
-        class="status"
-        [class.status--success]="status === 'success'"
-        [class.status--error]="status === 'error'"
-        role="status"
-        aria-live="polite"
-      >
-        {{ statusMessage }}
-      </p>
-    }
-
-    <button type="submit" [disabled]="isSending">
-      @if (isSending && uploadProgress > 0 && uploadProgress < 100) {
-        Téléversement {{ uploadProgress }} %
-      } @else if (isSending) {
-        Envoi en cours…
+    <footer class="form-footer">
+      @if (statusMessage) {
+        <p
+          class="status"
+          [class.status--success]="status === 'success'"
+          [class.status--error]="status === 'error'"
+          role="status"
+          aria-live="polite"
+        >
+          {{ statusMessage }}
+        </p>
       } @else {
-        Envoyer le message
+        <p class="privacy-copy">
+          Vos coordonnées servent uniquement à répondre à votre demande.
+        </p>
       }
-    </button>
+
+      <button class="submit-button" type="submit" [disabled]="isSending">
+        @if (isSending && uploadProgress > 0 && uploadProgress < 100) {
+          Téléversement {{ uploadProgress }} %
+        } @else if (isSending) {
+          Envoi en cours…
+        } @else {
+          Envoyer le message
+        }
+      </button>
+    </footer>
   </form>
 </main>
