@@ -8,7 +8,7 @@
   min-height: 100svh;
   place-items: center;
   overflow: hidden;
-  padding: clamp(7.5rem, 10vw, 9rem) 2rem clamp(4rem, 7vw, 6rem);
+  padding: clamp(7.5rem, 10vw, 9rem) 2rem clamp(9rem, 12vw, 12rem);
   background: #222327;
 }
 
@@ -543,6 +543,7 @@ textarea.ng-invalid.ng-touched,
 @media (max-width: 900px) {
   .contact-section {
     padding-right: 1.25rem;
+    padding-bottom: 10rem;
     padding-left: 1.25rem;
   }
 
@@ -564,6 +565,7 @@ textarea.ng-invalid.ng-touched,
   .contact-section {
     padding-top: 6.5rem;
     padding-right: 0.75rem;
+    padding-bottom: 9rem;
     padding-left: 0.75rem;
   }
 

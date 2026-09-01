@@ -1,10 +1,10 @@
-hr{
-    width: 200px;
+hr {
+  width: 200px;
 }
 
-p{
-    font-family: 'Poppins', sans-serif;
-    padding-bottom: 20px;
+p {
+  font-family: "Poppins", sans-serif;
+  padding-bottom: 20px;
 }
 
 .footer {
@@ -70,6 +70,7 @@ p{
   position: absolute;
   top: -100px;
   left: 0;
+  pointer-events: none;
   width: 100%;
   height: 100px;
   background-image: url("/footer/wave.png");

@@ -38,6 +38,10 @@ li{
     z-index: 1;
 }
 
+li:not(.indicator) {
+    z-index: 2;
+}
+
 li a{
     position: relative;
     display: flex;
@@ -83,12 +87,14 @@ li.active a .text{
 .indicator{
     position: absolute;
     top: 47%;
+    z-index: 1;
     width: 70px;
     height: 70px;
     background: #fff;
     box-sizing: border-box;
     border-radius: 50%;
     border: 6px solid #222327;
+    pointer-events: none;
     transition: 0.3s;
 }
 
