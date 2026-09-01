@@ -1,9 +1,5 @@
-// Importation des modules et interfaces nécessaires
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';  // Module pour les directives communes comme *ngFor, *ngIf
-import { IonicModule } from '@ionic/angular';  // Module Ionic pour utiliser les composants comme ion-icon
 
-// Définition de l'interface Slide qui structure chaque diapositive avec un titre, une description et une URL d'image
 interface Slide {
   title: string;
   description: string;
@@ -11,17 +7,13 @@ interface Slide {
   lien: string;
 }
 
-// Déclaration du composant Angular
 @Component({
-  selector: 'app-project-slider',  // Sélecteur pour inclure ce composant dans un template, par exemple <app-project-slider>
-  standalone: true,  // Indique que ce composant est autonome et n'a pas besoin d'être déclaré dans un module
-  imports: [CommonModule, IonicModule],  // Importation des modules nécessaires pour le fonctionnement du composant
-  templateUrl: './project-slider.component.html',  // Chemin vers le fichier HTML associé à ce composant
-  styleUrls: ['./project-slider.component.css']  // Chemin vers le fichier CSS associé à ce composant
+  selector: 'app-project-slider',
+  templateUrl: './project-slider.component.html',
+  styleUrl: './project-slider.component.css'
 })
 export class ProjectSliderComponent {
-  // Tableau de diapositives, chaque élément est un objet de type Slide
-  slides: Slide[] = [
+  readonly slides: Slide[] = [
     {
       title: "Pixel War",
       description: "Découvrez une refonte du célèbre r/place la plateforme collaborative où chaque pixel compte ! Créez, collaborez, et rivalisez avec d'autres utilisateurs pour façonner une toile numérique en constante évolution.",
@@ -54,54 +46,40 @@ export class ProjectSliderComponent {
     },
     {
       title: "Cooldown",
-      description: "Développement d'un réseaux social similaire à X. Partagez, publiez et interagissez comme jamais auparavant !",
+      description: "Développement d'un réseau social similaire à X. Partagez, publiez et interagissez comme jamais auparavant !",
       imageUrl: "projets/cooldown.jpg",
       lien: "https://github.com/Matthisphan/Cooldown"
     }
   ];
 
-  // Méthode pour retourner l'image de fond d'une diapositive sous forme de chaîne de caractères
-  getBackgroundImage(slide: Slide) {
+  getBackgroundImage(slide: Slide): string {
     return `url('${slide.imageUrl}')`;
   }
 
-  // Méthode pour passer à la diapositive suivante
-  nextSlide() {
-    // Retire la première diapositive du tableau et la place à la fin (rotation directe)
+  nextSlide(): void {
     this.slides.push(this.slides.shift()!);
   }
 
-  // Méthode pour revenir à la diapositive précédente
-  prevSlide() {
-    // Retire la dernière diapositive du tableau et la place au début (rotation inverse)
+  prevSlide(): void {
     this.slides.unshift(this.slides.pop()!);
   }
 
-  // Méthode pour mettre l'élément cliqué au début du tableau et déplacer l'élément en position 0 à la fin
-  moveSlideToFront(slide: Slide) {
+  moveSlideToFront(slide: Slide): void {
     const index = this.slides.indexOf(slide);
 
-    console.log(index);
-
     if (index > 0) {
-      // Retirer l'élément cliqué de sa position actuelle et le placer en première position
       const [clickedSlide] = this.slides.splice(index, 1);
-
-      // Déplacer l'élément en position 0 (avant le changement) à la fin du tableau
       const firstSlide = this.slides.shift();
-
-      // Ajouter l'élément cliqué en première position
       this.slides.unshift(clickedSlide);
-
-      // Ajouter l'ancien premier élément à la fin du tableau
       if (firstSlide) {
         this.slides.push(firstSlide);
       }
     }
   }
 
-  goToLink(url: string) {
-    window.open(url, '_blank');
+  goToLink(event: Event, url: string): void {
+    event.stopPropagation();
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 }
 

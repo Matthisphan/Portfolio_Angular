@@ -1,57 +1,74 @@
-import { APP_BASE_HREF } from '@angular/common';
-import { CommonEngine } from '@angular/ssr';
+import {
+  AngularNodeAppEngine,
+  createNodeRequestHandler,
+  isMainModule,
+  writeResponseToNodeResponse,
+} from '@angular/ssr/node';
 import express from 'express';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
-import bootstrap from './src/main.server';
+import { dirname, resolve } from 'node:path';
 
-// The Express app is exported so that it can be used by serverless Functions.
-export function app(): express.Express {
-  const server = express();
-  const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-  const browserDistFolder = resolve(serverDistFolder, '../browser');
-  const indexHtml = join(serverDistFolder, 'index.server.html');
+const serverDistFolder = dirname(fileURLToPath(import.meta.url));
+const browserDistFolder = resolve(serverDistFolder, '../browser');
 
-  const commonEngine = new CommonEngine();
+const server = express();
+const angularApp = new AngularNodeAppEngine();
 
-  server.set('view engine', 'html');
-  server.set('views', browserDistFolder);
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "connect-src 'self' https://api.emailjs.com https://ka-f.fontawesome.com https://*.r2.cloudflarestorage.com",
+  "font-src 'self' data: https://fonts.gstatic.com https://ka-f.fontawesome.com",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "img-src 'self' data: blob:",
+  "object-src 'none'",
+  "script-src 'self' https://kit.fontawesome.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://ka-f.fontawesome.com",
+].join('; ');
 
-  // Example Express Rest API endpoints
-  // server.get('/api/**', (req, res) => { });
-  // Serve static files from /browser
-  server.get('**', express.static(browserDistFolder, {
-    maxAge: '1y',
-    index: 'index.html',
-  }));
-
-  // All regular routes use the Angular engine
-  server.get('**', (req, res, next) => {
-    const { protocol, originalUrl, baseUrl, headers } = req;
-
-    commonEngine
-      .render({
-        bootstrap,
-        documentFilePath: indexHtml,
-        url: `${protocol}://${headers.host}${originalUrl}`,
-        publicPath: browserDistFolder,
-        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
-      })
-      .then((html) => res.send(html))
-      .catch((err) => next(err));
+server.use((request, response, next) => {
+  response.set({
+    'Content-Security-Policy': contentSecurityPolicy,
+    'Permissions-Policy': 'camera=(), geolocation=(), microphone=()',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
   });
 
-  return server;
-}
+  const forwardedProtocol = request.get('x-forwarded-proto');
+  if (request.secure || forwardedProtocol?.split(',')[0].trim() === 'https') {
+    response.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
 
-function run(): void {
+  next();
+});
+
+server.use(
+  express.static(browserDistFolder, {
+    maxAge: '1y',
+    index: false,
+    redirect: false,
+  }),
+);
+
+server.use((request, response, next) => {
+  angularApp
+    .handle(request)
+    .then((angularResponse) =>
+      angularResponse
+        ? writeResponseToNodeResponse(angularResponse, response)
+        : next(),
+    )
+    .catch(next);
+});
+
+if (isMainModule(import.meta.url)) {
   const port = process.env['PORT'] || 4000;
 
-  // Start up the Node server
-  const server = app();
   server.listen(port, () => {
     console.log(`Node Express server listening on http://localhost:${port}`);
   });
 }
 
-run();
+export default createNodeRequestHandler(server);

@@ -113,6 +113,8 @@ main {
     color: #fff;
     font-size: 30px;
     padding: 0;
+    border: 0;
+    background: transparent;
   }
 }
 

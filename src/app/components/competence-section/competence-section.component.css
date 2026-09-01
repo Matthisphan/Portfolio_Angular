@@ -60,16 +60,22 @@ img{
     gap: 20px;
 }
 
-.filterButtons li{
+.filterButtons li {
     list-style: none;
+    z-index: 1;
+}
+
+.filterButtons button {
     font-family: 'Poppins', sans-serif;
     color: #fff;
     cursor: pointer;
     transition: 0.5s;
-    z-index: 1;
+    border: 0;
+    background: transparent;
 }
 
-.filterButtons li:hover{
+.filterButtons button:hover,
+.filterButtons button[aria-pressed="true"] {
     font-size: 20px;
 }
 
@@ -96,10 +102,11 @@ img{
         width: 70%;
         grid-template-columns: repeat(1, 1fr);
     }
-    .filterButtons li{
+    .filterButtons button {
         font-size: 10px;
     }
-    .filterButtons li:hover{
+    .filterButtons button:hover,
+    .filterButtons button[aria-pressed="true"] {
         font-size: 14px;
     }
 

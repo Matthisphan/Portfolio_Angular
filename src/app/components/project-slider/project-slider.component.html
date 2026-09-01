@@ -1,15 +1,29 @@
 <main>
-  <ul id="section_project" class='slider'>
-    <li *ngFor="let slide of slides" class='item' [style.background-image]="getBackgroundImage(slide)" (click)="moveSlideToFront(slide)">
-        <div class='content'>
-          <h2 class='title'>{{ slide.title }}</h2>
-          <p class='description'>{{ slide.description }}</p>
-          <button (click)="goToLink(slide.lien)">voir plus</button>
+  <ul class="slider">
+    @for (slide of slides; track slide.title) {
+      <li
+        class="item"
+        role="button"
+        tabindex="0"
+        [style.background-image]="getBackgroundImage(slide)"
+        (click)="moveSlideToFront(slide)"
+        (keydown.enter)="moveSlideToFront(slide)"
+        (keydown.space)="$event.preventDefault(); moveSlideToFront(slide)"
+      >
+        <div class="content">
+          <h2 class="title">{{ slide.title }}</h2>
+          <p class="description">{{ slide.description }}</p>
+          <button type="button" (click)="goToLink($event, slide.lien)">Voir plus</button>
         </div>
-    </li>
+      </li>
+    }
   </ul>
-  <nav class='nav'>
-    <ion-icon class='btn prev' name="chevron-back-outline" (click)="prevSlide()"></ion-icon>
-    <ion-icon class='btn next' name="chevron-forward-outline" (click)="nextSlide()"></ion-icon>
+  <nav class="nav" aria-label="Navigation des projets">
+    <button type="button" class="btn prev" aria-label="Projet précédent" (click)="prevSlide()">
+      <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="btn next" aria-label="Projet suivant" (click)="nextSlide()">
+      <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    </button>
   </nav>
 </main>

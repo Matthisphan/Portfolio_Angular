@@ -1,22 +1,20 @@
-import { Component} from '@angular/core';
-import { CommonModule } from '@angular/common'; 
+import { Component } from '@angular/core';
 
-interface Skills {
+type SkillGenre = 'dev' | 'design' | 'divers';
+
+interface Skill {
   title: string;
   imageUrl: string;
-  genre: string;
+  genre: SkillGenre;
 }
 
 @Component({
   selector: 'app-competence-section',
-  standalone: true,
-  imports: [CommonModule],
   templateUrl: './competence-section.component.html',
   styleUrl: './competence-section.component.css'
 })
-
-export class CompetenceSectionComponent{
-  skills: Skills[] = [
+export class CompetenceSectionComponent {
+  readonly skills: Skill[] = [
     {
       title: "HTML",
       imageUrl: "competence/html.png",
@@ -74,13 +72,13 @@ export class CompetenceSectionComponent{
     }
   ];
 
-  selectedGenre: string = 'all';
+  selectedGenre: SkillGenre | 'all' = 'all';
 
-  filterSkills(genre: string): void {
+  filterSkills(genre: SkillGenre | 'all'): void {
     this.selectedGenre = genre;
   }
 
-  get filteredSkills(): Skills[] {
+  get filteredSkills(): Skill[] {
     if (this.selectedGenre === 'all') {
       return this.skills;
     }

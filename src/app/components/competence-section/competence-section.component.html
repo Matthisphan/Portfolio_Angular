@@ -1,19 +1,21 @@
 <main>
-    <video autoplay muted loop id="backgroundVideo">
-        <source src="background_competence.webm" type="video/mp4">
-    </video>
+  <video autoplay muted loop playsinline id="backgroundVideo" aria-hidden="true">
+    <source src="background_competence.webm" type="video/webm">
+  </video>
 
-    <ul class="filterButtons">
-        <li (click)="filterSkills('all')">Tout</li>
-        <li (click)="filterSkills('dev')">Développements</li>
-        <li (click)="filterSkills('design')">Design</li>
-        <li (click)="filterSkills('divers')">Divers</li>
-    </ul>
+  <ul class="filterButtons">
+    <li><button type="button" [attr.aria-pressed]="selectedGenre === 'all'" (click)="filterSkills('all')">Tout</button></li>
+    <li><button type="button" [attr.aria-pressed]="selectedGenre === 'dev'" (click)="filterSkills('dev')">Développement</button></li>
+    <li><button type="button" [attr.aria-pressed]="selectedGenre === 'design'" (click)="filterSkills('design')">Design</button></li>
+    <li><button type="button" [attr.aria-pressed]="selectedGenre === 'divers'" (click)="filterSkills('divers')">Divers</button></li>
+  </ul>
 
-    <div id="section_competence" class="containerGrid">
-        <div *ngFor="let skill of filteredSkills" class="gridItems">
-            <img [src]="skill.imageUrl" alt="{{ skill.title }}"/>
-            <h2 class='title'>{{ skill.title }}</h2>
-        </div>
-    </div>
+  <div class="containerGrid">
+    @for (skill of filteredSkills; track skill.title) {
+      <div class="gridItems">
+        <img [src]="skill.imageUrl" [alt]="skill.title">
+        <h2 class="title">{{ skill.title }}</h2>
+      </div>
+    }
+  </div>
 </main>

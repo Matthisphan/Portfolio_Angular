@@ -88,7 +88,7 @@ p{
     font-weight: 300;
     margin-bottom: 20px;
 }
-.buttonContact a {
+.buttonContact {
     position: relative;
     display: inline-block;
     padding: 15px 30px;
@@ -99,7 +99,7 @@ p{
     font-size: 20px;
   }
   
-  .buttonContact a::before {
+  .buttonContact::before {
     content: '';
     position: absolute;
     top: 6px;
@@ -111,11 +111,11 @@ p{
     transform: scaleY(1);
   }
   
-  .buttonContact a:hover::before {
+  .buttonContact:hover::before {
     transform: scaleY(0);
   }
   
-  .buttonContact a::after {
+  .buttonContact::after {
     content: '';
     position: absolute;
     left: 6px;
@@ -128,20 +128,15 @@ p{
     transition-delay: 0.5s;
   }
   
-  .buttonContact a:hover::after {
+  .buttonContact:hover::after {
     transform: scaleX(0);
   }
   
-  .buttonContact a span {
+  .buttonContact span {
     position: relative;
     z-index: 3;
   }
   
-  .buttonContact {
-    text-decoration: none;
-    background-color: #222327;
-    border: none;
-  }
 
 .scroll-downs {
     position: absolute;
