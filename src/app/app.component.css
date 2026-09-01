@@ -1,9 +1,17 @@
-#section_home{
-    height: 100vh;
+#section_home {
+  height: 100vh;
 }
 
-#section_project{
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
+#section_project,
+#section_competence,
+#section_contact {
+  position: relative;
+  z-index: 1;
+  background-color: #222327;
+}
+
+#section_project {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }

@@ -1,9 +1,14 @@
-main {
+.project-slider {
   position: relative;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  background-color: #222327;
+}
+
+.slider {
+  background-color: #222327;
 }
 
 .item {
@@ -17,10 +22,15 @@ main {
   background-position: center;
   background-size: cover;
   border-radius: 20px;
-  box-shadow: 0 20px 30px rgba(255,255,255,0.3) inset;
-  transition: transform 0.1s, left 0.75s, top 0.75s, width 0.75s, height 0.75s;
-  
-  &:nth-child(1){
+  box-shadow: 0 20px 30px rgba(255, 255, 255, 0.3) inset;
+  transition:
+    transform 0.1s,
+    left 0.75s,
+    top 0.75s,
+    width 0.75s,
+    height 0.75s;
+
+  &:nth-child(1) {
     left: 0;
     top: 0;
     width: 100%;
@@ -31,38 +41,61 @@ main {
     opacity: 1;
   }
 
-  &:nth-child(1)::before{
+  &:nth-child(1)::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Couleur de fond semi-transparente */
+    background-color: rgba(
+      0,
+      0,
+      0,
+      0.5
+    ); /* Couleur de fond semi-transparente */
     z-index: -1;
   }
 
-  &:nth-child(2) { left: 50%; cursor: pointer;}
-  &:nth-child(3) { left: calc(50% + 220px); cursor: pointer;}
-  &:nth-child(4) { left: calc(50% + 440px); cursor: pointer;}
-  &:nth-child(5) { left: calc(50% + 660px); cursor: pointer;}
-  &:nth-child(6) { left: calc(50% + 880px); opacity: 0; cursor: pointer;}
+  &:nth-child(2) {
+    left: 50%;
+    cursor: pointer;
+  }
+  &:nth-child(3) {
+    left: calc(50% + 220px);
+    cursor: pointer;
+  }
+  &:nth-child(4) {
+    left: calc(50% + 440px);
+    cursor: pointer;
+  }
+  &:nth-child(5) {
+    left: calc(50% + 660px);
+    cursor: pointer;
+  }
+  &:nth-child(6) {
+    left: calc(50% + 880px);
+    opacity: 0;
+    cursor: pointer;
+  }
 }
 
 .content {
-  width: min(30vw,500px);
+  width: min(30vw, 500px);
   position: absolute;
   top: 50%;
   left: 15%;
   transform: translateY(-50%);
-  font: 400 2rem 'Poppins',sans-serif;
+  font:
+    400 2rem "Poppins",
+    sans-serif;
   color: white;
-  text-shadow: 0 3px 8px rgba(0,0,0,0.5);
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
   opacity: 0;
   display: none;
 
   & .title {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     text-transform: uppercase;
     font-size: 2rem;
   }
@@ -75,7 +108,7 @@ main {
 
   & button {
     width: fit-content;
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0, 0, 0, 0.1);
     color: white;
     border: 2px solid white;
     border-radius: 0.25rem;
@@ -120,38 +153,68 @@ main {
 
 @media only screen and (max-width: 1201px) {
   .content {
-    width: min(40vw,500px);
-    & .title        { font-size: 2rem; }
-    & .description  { font-size: 1rem; }
-    & button        { font-size: 1rem; }
+    width: min(40vw, 500px);
+    & .title {
+      font-size: 2rem;
+    }
+    & .description {
+      font-size: 1rem;
+    }
+    & button {
+      font-size: 1rem;
+    }
   }
 
   .item {
     width: 160px;
     height: 270px;
 
-    &:nth-child(2) { left: 60%; }
-    &:nth-child(3) { left: calc(60% + 170px); }
-    &:nth-child(4) { left: calc(60% + 340px); }
-    &:nth-child(5) { left: calc(60% + 510px); opacity: 0; }
+    &:nth-child(2) {
+      left: 60%;
+    }
+    &:nth-child(3) {
+      left: calc(60% + 170px);
+    }
+    &:nth-child(4) {
+      left: calc(60% + 340px);
+    }
+    &:nth-child(5) {
+      left: calc(60% + 510px);
+      opacity: 0;
+    }
   }
 }
 
 @media only screen and (max-width: 768px) {
   .content {
-    width: min(55vw,500px);
-    & .title        { font-size: 2rem; }
-    & .description  { font-size: 1rem; }
-    & button        { font-size: 1rem; }
+    width: min(55vw, 500px);
+    & .title {
+      font-size: 2rem;
+    }
+    & .description {
+      font-size: 1rem;
+    }
+    & button {
+      font-size: 1rem;
+    }
   }
   .item {
     width: 130px;
     height: 220px;
 
-    &:nth-child(2) { left: 75%; }
-    &:nth-child(3) { left: calc(75% + 140px); }
-    &:nth-child(4) { left: calc(75% + 280px); }
-    &:nth-child(5) { left: calc(75% + 420px); opacity: 0; }
+    &:nth-child(2) {
+      left: 75%;
+    }
+    &:nth-child(3) {
+      left: calc(75% + 140px);
+    }
+    &:nth-child(4) {
+      left: calc(75% + 280px);
+    }
+    &:nth-child(5) {
+      left: calc(75% + 420px);
+      opacity: 0;
+    }
   }
 
   .nav {

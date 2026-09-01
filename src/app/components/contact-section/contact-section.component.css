@@ -2,7 +2,7 @@
   display: block;
 }
 
-main {
+.contact-section {
   position: relative;
   display: grid;
   min-height: 100svh;
@@ -541,7 +541,7 @@ textarea.ng-invalid.ng-touched,
 }
 
 @media (max-width: 900px) {
-  main {
+  .contact-section {
     padding-right: 1.25rem;
     padding-left: 1.25rem;
   }
@@ -561,7 +561,7 @@ textarea.ng-invalid.ng-touched,
 }
 
 @media (max-width: 600px) {
-  main {
+  .contact-section {
     padding-top: 6.5rem;
     padding-right: 0.75rem;
     padding-left: 0.75rem;

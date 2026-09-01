@@ -1,4 +1,4 @@
-<main>
+<div class="contact-section">
   <div class="background" aria-hidden="true">
     <div class="shape"></div>
     <div class="shape"></div>
@@ -37,7 +37,7 @@
               required
               ngModel
               #firstName="ngModel"
-            >
+            />
             @if (firstName.invalid && firstName.touched) {
               <p class="field-error">Indiquez un prénom valide.</p>
             }
@@ -57,7 +57,7 @@
               required
               ngModel
               #lastName="ngModel"
-            >
+            />
             @if (lastName.invalid && lastName.touched) {
               <p class="field-error">Indiquez un nom valide.</p>
             }
@@ -78,15 +78,20 @@
             email
             ngModel
             #email="ngModel"
-          >
+          />
           @if (email.invalid && email.touched) {
             <p class="field-error">Indiquez une adresse e-mail valide.</p>
           }
         </div>
 
         <div class="field">
-          <label for="tel">Téléphone <span class="optional">facultatif</span></label>
-          <div class="phone-control" [class.phone-control--invalid]="phoneError">
+          <label for="tel"
+            >Téléphone <span class="optional">facultatif</span></label
+          >
+          <div
+            class="phone-control"
+            [class.phone-control--invalid]="phoneError"
+          >
             <select
               id="phone-country"
               name="phone_country"
@@ -113,28 +118,10 @@
               (ngModelChange)="onPhoneChanged()"
               [disabled]="isSending"
               [attr.aria-invalid]="phoneError ? 'true' : null"
-            >
+            />
           </div>
           @if (phoneError) {
             <p class="field-error">{{ phoneError }}</p>
-          }
-        </div>
-
-        <div class="field">
-          <label for="subject">
-            Objet <span aria-hidden="true">*</span>
-          </label>
-          <input
-            id="subject"
-            type="text"
-            name="subject"
-            maxlength="120"
-            required
-            ngModel
-            #subject="ngModel"
-          >
-          @if (subject.invalid && subject.touched) {
-            <p class="field-error">Indiquez l’objet de votre message.</p>
           }
         </div>
 
@@ -145,7 +132,26 @@
         </p>
       </section>
 
-      <section class="form-column form-column--message" aria-label="Votre message">
+      <section
+        class="form-column form-column--message"
+        aria-label="Votre message"
+      >
+        <div class="field">
+          <label for="subject"> Objet <span aria-hidden="true">*</span> </label>
+          <input
+            id="subject"
+            type="text"
+            name="subject"
+            maxlength="120"
+            required
+            ngModel
+            #subject="ngModel"
+          />
+          @if (subject.invalid && subject.touched) {
+            <p class="field-error">Indiquez l’objet de votre message.</p>
+          }
+        </div>
+
         <div class="field">
           <label for="message">
             Message <span aria-hidden="true">*</span>
@@ -162,7 +168,9 @@
           ></textarea>
           <div class="field-meta">
             @if (message.invalid && message.touched) {
-              <p class="field-error">Écrivez un message d’au moins 20 caractères.</p>
+              <p class="field-error">
+                Écrivez un message d’au moins 20 caractères.
+              </p>
             } @else {
               <span>3 000 caractères maximum</span>
             }
@@ -174,7 +182,10 @@
             <label id="attachment-label" for="attachment">
               Documents <span class="optional">facultatifs</span>
             </label>
-            <span>{{ selectedAttachments.length }}/{{ maxFileCount }} · {{ selectedFilesSize }}</span>
+            <span
+              >{{ selectedAttachments.length }}/{{ maxFileCount }} ·
+              {{ selectedFilesSize }}</span
+            >
           </div>
 
           <div
@@ -200,10 +211,14 @@
               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/webp"
               [disabled]="isSending"
               (change)="onFileSelected($event)"
-            >
+            />
             <span class="drop-zone__icon" aria-hidden="true">＋</span>
-            <span class="drop-zone__title">Déposez ou sélectionnez vos fichiers</span>
-            <span class="drop-zone__hint">Vous pouvez aussi copier puis coller avec Ctrl + V</span>
+            <span class="drop-zone__title"
+              >Déposez ou sélectionnez vos fichiers</span
+            >
+            <span class="drop-zone__hint"
+              >Vous pouvez aussi copier puis coller avec Ctrl + V</span
+            >
           </div>
 
           <p id="file-help" class="file-help">
@@ -211,7 +226,10 @@
           </p>
 
           @if (selectedAttachments.length) {
-            <div class="file-previews" aria-label="Aperçu des fichiers sélectionnés">
+            <div
+              class="file-previews"
+              aria-label="Aperçu des fichiers sélectionnés"
+            >
               @for (attachment of selectedAttachments; track attachment.id) {
                 <article class="file-card">
                   <div class="file-card__preview">
@@ -219,21 +237,31 @@
                       <img
                         [src]="attachment.previewUrl"
                         [alt]="'Aperçu de ' + attachment.file.name"
-                      >
+                      />
                     } @else {
                       <span
                         class="file-card__type"
                         [class.file-card__type--pdf]="attachment.kind === 'pdf'"
-                        [class.file-card__type--word]="attachment.kind === 'word'"
-                        [class.file-card__type--excel]="attachment.kind === 'excel'"
+                        [class.file-card__type--word]="
+                          attachment.kind === 'word'
+                        "
+                        [class.file-card__type--excel]="
+                          attachment.kind === 'excel'
+                        "
                       >
                         {{ attachment.extension.toUpperCase() }}
                       </span>
                     }
                   </div>
                   <div class="file-card__details">
-                    <strong [title]="attachment.file.name">{{ attachment.file.name }}</strong>
-                    <span>{{ attachment.file.size < 1048576 ? (attachment.file.size / 1024).toFixed(0) + ' Ko' : (attachment.file.size / 1048576).toFixed(1) + ' Mo' }}</span>
+                    <strong [title]="attachment.file.name">{{
+                      attachment.file.name
+                    }}</strong>
+                    <span>{{
+                      attachment.file.size < 1048576
+                        ? (attachment.file.size / 1024).toFixed(0) + " Ko"
+                        : (attachment.file.size / 1048576).toFixed(1) + " Mo"
+                    }}</span>
                   </div>
                   <button
                     class="file-card__remove"
@@ -269,14 +297,14 @@
       </section>
     </div>
 
-    <input type="hidden" name="user_name">
-    <input type="hidden" name="user_phone">
-    <input type="hidden" name="attachment_url">
-    <input type="hidden" name="attachment_links">
-    <input type="hidden" name="attachment_count">
-    <input type="hidden" name="attachment_name">
-    <input type="hidden" name="attachment_size">
-    <input type="hidden" name="attachment_expires_at">
+    <input type="hidden" name="user_name" />
+    <input type="hidden" name="user_phone" />
+    <input type="hidden" name="attachment_url" />
+    <input type="hidden" name="attachment_links" />
+    <input type="hidden" name="attachment_count" />
+    <input type="hidden" name="attachment_name" />
+    <input type="hidden" name="attachment_size" />
+    <input type="hidden" name="attachment_expires_at" />
 
     <div class="honeypot" aria-hidden="true">
       <label for="website">Site web</label>
@@ -286,7 +314,7 @@
         name="website"
         tabindex="-1"
         autocomplete="off"
-      >
+      />
     </div>
 
     <footer class="form-footer">
@@ -317,4 +345,4 @@
       </button>
     </footer>
   </form>
-</main>
+</div>
