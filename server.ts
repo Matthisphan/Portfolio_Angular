@@ -14,6 +14,14 @@ export async function netlifyAppEngineHandler(
   request: Request,
 ): Promise<Response> {
   const context = getContext();
+
+  if (
+    context &&
+    new URL(request.url).pathname.startsWith('/api/contact-upload/')
+  ) {
+    return context.next(request);
+  }
+
   const result = await angularAppEngine.handle(request, context);
 
   return result || new Response('Not found', { status: 404 });
